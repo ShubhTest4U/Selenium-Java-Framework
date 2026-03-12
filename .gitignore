@@ -1,0 +1,10 @@
+# Build / IDE / logs / reports
+/target/
+/.settings/
+/.classpath
+/.project
+/logs/
+/test-output/
+/ExtentReport/
+*.log
+*.class
