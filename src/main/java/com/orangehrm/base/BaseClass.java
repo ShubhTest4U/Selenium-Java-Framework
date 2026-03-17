@@ -20,7 +20,7 @@ import org.testng.annotations.BeforeSuite;
 
 public class BaseClass {
 
-	protected Properties prop;
+	protected static Properties prop;
 	protected WebDriver driver;
 
 	@BeforeSuite
@@ -90,6 +90,24 @@ public class BaseClass {
 		}
 	
 	}
+	
+	//Getter method for prop
+	public static Properties getProp()
+	{
+		return prop;
+	}
+	
+	//Driver getter method
+	public WebDriver getDriver() 
+	{
+		return driver;
+	}
+	
+	//Driver setter method
+		public WebDriver setDriver() 
+		{
+			return driver;
+		}
 	
 	//Static wait for pause
 	public void staticWait(int seconds) {
