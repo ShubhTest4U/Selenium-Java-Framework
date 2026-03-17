@@ -2,9 +2,9 @@
 <suite name="OrangeHRMSuite">
 	<test name="OrangeHRMTest">
 		<classes>
-			<class name="com.orangehrm.test.Dummy">
-				
-			</class>
+			<class name="com.orangehrm.test.Dummy"> </class>
+			<class name="com.orangehrm.test.Dummy2"> </class>
+			<class name="com.orangehrm.test.LoginPageTest"> </class>
 		</classes>
 	</test>
-</suite>
+</suite>                  
