@@ -11,6 +11,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.orangehrm.base.BaseClass;
 
+import net.bytebuddy.asm.Advice.Return;
+
 public class ActionDriver {
 	
 	private WebDriver driver;
@@ -21,6 +23,7 @@ public class ActionDriver {
 		this.driver = driver;
 		int explicitWait = Integer.parseInt(BaseClass.getProp().getProperty("explicitWait"));
 		this.wait = new WebDriverWait(driver, Duration.ofSeconds(explicitWait));
+		System.out.println("ActionDriver initialized with WebDriver.");
 	}
 	
 	//Method to click element
@@ -61,19 +64,24 @@ public class ActionDriver {
 	}
 	
 	//Method to compare Two text
-	public void compareText(By by, String expectedText) 
+	public boolean compareText(By by, String expectedText) 
 	{
 		try {
 			waitForElementToBeVisible(by);
 			String actualText = driver.findElement(by).getText();
 			if(expectedText.equals(actualText))
-				System.out.println("Text are matching: "+actualText+ " equals "+expectedText);
+			{
+				System.out.println("Texts are matching: "+actualText+ " equals with text: "+expectedText);
+				return true;
+			}
 			else {
-				System.out.println("Text are not matching: "+actualText+" not equals "+expectedText);
+				System.out.println("Texts are not matching: "+actualText+" not equals with text: "+expectedText);
+				return false;
 			}
 		} catch (Exception e) {
 			System.out.println("Unable to compare Texts: "+e.getMessage());
 		}
+		return false;
 	}
 	
 	//Method to check if an element is displayed
