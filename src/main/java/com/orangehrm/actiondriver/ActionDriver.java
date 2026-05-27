@@ -2,6 +2,7 @@ package com.orangehrm.actiondriver;
 
 import java.time.Duration;
 
+import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -17,13 +18,14 @@ public class ActionDriver {
 	
 	private WebDriver driver;
 	private WebDriverWait wait;
+	public static final Logger logger = BaseClass.logger;
 	
 	public ActionDriver(WebDriver driver) 
 	{
 		this.driver = driver;
 		int explicitWait = Integer.parseInt(BaseClass.getProp().getProperty("explicitWait"));
 		this.wait = new WebDriverWait(driver, Duration.ofSeconds(explicitWait));
-		System.out.println("ActionDriver initialized with WebDriver.");
+		logger.info("WebDriver instance is created.");
 	}
 	
 	//Method to click element
@@ -31,8 +33,10 @@ public class ActionDriver {
 	{
 		try {
 			driver.findElement(by).click();
+			logger.info("Clicked an element");
 		} catch (Exception e) {
 			System.out.println("Unable to click element: "+e.getMessage());
+			logger.error("Unable to click element");
 		}
 		
 	}
@@ -44,10 +48,11 @@ public class ActionDriver {
 		try {
 			waitForElementToBeVisible(by);
 			WebElement element = driver.findElement(by);
-			element.sendKeys(value);
 			element.clear();
+			element.sendKeys(value);
+			logger.info("Entered text: "+value);
 		} catch (Exception e) {
-			System.out.println("Unable to enter the value: "+e.getMessage());
+			logger.error("Unable to enter the value: "+e.getMessage());
 		}	
 	}
 	
@@ -58,7 +63,7 @@ public class ActionDriver {
 			waitForElementToBeVisible(by);
 			return driver.findElement(by).getText();
 		} catch (Exception e) {
-			System.out.println("unable to get the text: "+e.getMessage());
+			logger.error("unable to get the text: "+e.getMessage());
 			return "";
 		}
 	}
@@ -71,15 +76,15 @@ public class ActionDriver {
 			String actualText = driver.findElement(by).getText();
 			if(expectedText.equals(actualText))
 			{
-				System.out.println("Texts are matching: "+actualText+ " equals with text: "+expectedText);
+				logger.info("Texts are matching: "+actualText+ " equals with text: "+expectedText);
 				return true;
 			}
 			else {
-				System.out.println("Texts are not matching: "+actualText+" not equals with text: "+expectedText);
+				logger.error("Texts are not matching: "+actualText+" not equals with text: "+expectedText);
 				return false;
 			}
 		} catch (Exception e) {
-			System.out.println("Unable to compare Texts: "+e.getMessage());
+			logger.error("Unable to compare Texts: "+e.getMessage());
 		}
 		return false;
 	}
@@ -91,7 +96,7 @@ public class ActionDriver {
 			waitForElementToBeVisible(by);
 			return driver.findElement(by).isDisplayed();
 		} catch (Exception e) {
-			System.out.println("Element is not displayed: "+e.getMessage());
+			logger.error("Element is not displayed: "+e.getMessage());
 			return false;
 		}
 		
@@ -102,9 +107,9 @@ public class ActionDriver {
 			try {
 				wait.withTimeout(Duration.ofSeconds(timeOutInSec)).until(WebDriver -> ((JavascriptExecutor) WebDriver)
 						.executeScript("return document.readyState").equals("complete"));
-				System.out.println("Page loaded successfully.");
+				logger.info("Page loaded successfully.");
 			} catch (Exception e) {
-				System.out.println("Page did not load within " + timeOutInSec + " seconds. Exception: " + e.getMessage());
+				logger.error("Page did not load within " + timeOutInSec + " seconds. Exception: " + e.getMessage());
 			}
 		}
 
@@ -117,7 +122,7 @@ public class ActionDriver {
 			WebElement element = driver.findElement(by);
 			js.executeScript("arguments[0],scrollIntoView(true);", element);
 		} catch (Exception e) {
-			System.out.println("Unable to locate element: "+e.getMessage());
+			logger.error("Unable to locate element: "+e.getMessage());
 		}
 		
 	}
@@ -128,7 +133,7 @@ public class ActionDriver {
 		try {
 			wait.until(ExpectedConditions.elementToBeClickable(by));
 		} catch (Exception e) {
-			System.out.println("Element is not clickable: "+e.getMessage());
+			logger.error("Element is not clickable: "+e.getMessage());
 		}
 	}
 	

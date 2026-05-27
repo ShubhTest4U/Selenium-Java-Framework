@@ -4,12 +4,12 @@ import org.testng.annotations.Test;
 
 import com.orangehrm.base.BaseClass;
 
-public class Dummy extends BaseClass{
+public class Dummy2 extends BaseClass{
 	
 	@Test
 	public void dummyTest() {
 		
-		String title = getDriver().getTitle();
+		String title = driver.getTitle();
 		assert title.equals("OrangeHRM"):"Test faild - Title not matching";
 		
 		System.out.println("Test passed - Title is matching");
