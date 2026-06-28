@@ -45,7 +45,7 @@ public class BaseClass {
 		logger.info("Config.properties file loaded successfully");
 
 		// Start the ExtentReport
-		ExtentManager.getReporter();
+		//ExtentManager.getReporter(); -- This has been implemented in test listener class
 	}
 
 	@BeforeMethod
@@ -135,7 +135,7 @@ public class BaseClass {
 		actionDriver.remove();
 //		driver=null;
 //		actionDriver=null;
-		ExtentManager.endTest();
+		//ExtentManager.endTest(); -- This has been implemented in test listener class
 	}
 
 	/*

@@ -8,9 +8,9 @@ import com.orangehrm.utilities.ExtentManager;
 public class Dummy2 extends BaseClass {
 
 	@Test
-	public void dummyTest() {
+	public void dummyTest2() {
 
-		ExtentManager.startTest("DummyTest2 Test");
+		//ExtentManager.startTest("DummyTest2 Test"); -- This has been implemented in test listener class
 		String title = getDriver().getTitle();
 		ExtentManager.logStep("verifying the title");
 		assert title.equals("OrangeHRM") : "Test Failed - Title is Not Matching";
