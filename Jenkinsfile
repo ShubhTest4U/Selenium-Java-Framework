@@ -5,6 +5,7 @@ pipeline {
         maven 'maven-3.9.16' 
     }
 
+    stages {
         stage('Checkout') {
             steps {
                 git branch: 'main', url: 'https://github.com/ShubhTest4U/Selenium-Java-Framework.git'
@@ -89,3 +90,4 @@ pipeline {
             )
         }
     }
+}
