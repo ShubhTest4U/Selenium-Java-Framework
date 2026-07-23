@@ -2,6 +2,8 @@ package com.orangehrm.base;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.Duration;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -15,11 +17,14 @@ import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testng.Reporter;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 
+
+import org.testng.annotations.Parameters;
 import com.orangehrm.actiondriver.ActionDriver;
 import com.orangehrm.utilities.ExtentManager;
 import com.orangehrm.utilities.LoggerManager;
@@ -41,71 +46,109 @@ public class BaseClass {
 	}
 
 	@BeforeMethod
-	public synchronized void setup() throws IOException {
+	@Parameters("browser")
+	public synchronized void setup(String browser) throws IOException {
 		System.out.println("Setting up WebDriver for:" + this.getClass().getSimpleName());
-		launchBrowser();
+		launchBrowser(browser);
 		configureBrowser();
-		staticWait(2);
-		logger.info("Webdriver initialized and browser maximized");
+		staticWait(2);	
+		// Sample logger message
+		logger.info("WebDriver Initialized and Browser Maximized");
+		logger.trace("This is a Trace message");
+		logger.error("This is a error message");
+		logger.debug("This is a debug message");
+		logger.fatal("This is a fatal message");
+		logger.warn("This is a warm message");
 
 		// Bind the active driver instance to TestNG's execution context attributes
 		if (getDriver() != null) {
 			Reporter.getCurrentTestResult().setAttribute("WebDriverContext", getDriver());
 		}
 
+		// Initialize ActionDriver for the current thread
 		actionDriver.set(new ActionDriver(getDriver()));
 		logger.info("ActionDriver initialized for thread:" + Thread.currentThread().getId());
 	}
 
-	private synchronized void launchBrowser() {
+	private synchronized void launchBrowser(String browser) {
 
-		String browser = prop.getProperty("browser");
-
-		if (browser.equalsIgnoreCase("chrome")) {
-
-			// Create ChromeOptions instance to configure ChromeDriver
-
-			ChromeOptions options = new ChromeOptions();
-			// options.addArguments("--headless"); // Run Chrome in headless mode
-			options.addArguments("--disable-gpu"); // Disable GPU for headless mode
-			// options.addArguments("--window-size=1920,1080"); // Set window size
-			options.addArguments("--disable-notifications"); // Disable browser notifications
-			options.addArguments("--no-sandbox"); // Required for some CI environments like Jenkins
-			options.addArguments("--disable-dev-shm-usage"); // Resolve issues in resource-limited environments
-
-			driver.set(new ChromeDriver(options)); // New changes as per Thread
-			ExtentManager.registerDriver(getDriver());
-			logger.info("ChromeDriver Instance is created");
-		} else if (browser.equalsIgnoreCase("firefox")) {
-
-			// Create FirefoxOptions instance to configure FirefoxDriver
-			FirefoxOptions options = new FirefoxOptions();
-			options.addArguments("--headless"); // Run Firefox in headless mode
-			options.addArguments("--disable-gpu"); // Disable GPU rendering (useful for headless mode)
-			options.addArguments("--width=1920"); // Set browser width
-			options.addArguments("--height=1080"); // Set browser height
-			options.addArguments("--disable-notifications"); // Disable browser notifications
-			options.addArguments("--no-sandbox"); // Needed for CI/CD environments
-			options.addArguments("--disable-dev-shm-usage"); // Prevent crashes in low-resource environments
-
-			driver.set(new FirefoxDriver(options)); // New changes as per Thread
-			ExtentManager.registerDriver(getDriver());
-			logger.info("FirefoxDriver Instance is created");
-		} else if (browser.equalsIgnoreCase("edge")) {
-
-			EdgeOptions options = new EdgeOptions();
-			options.addArguments("--headless"); // Run Edge in headless mode
-			options.addArguments("--disable-gpu"); // Disable GPU acceleration
-			options.addArguments("--window-size=1920,1080"); // Set window size
-			options.addArguments("--disable-notifications"); // Disable pop-up notifications
-			options.addArguments("--no-sandbox"); // Needed for CI/CD
-			options.addArguments("--disable-dev-shm-usage"); // Prevent resource-limited crashes
-
-			driver.set(new EdgeDriver(options)); // New changes as per Thread
-			ExtentManager.registerDriver(getDriver());
-			logger.info("EdgeDriver Instance is created");
+	    boolean seleniumGrid = Boolean.parseBoolean(prop.getProperty("seleniumGrid"));
+	    String gridURL = prop.getProperty("gridURL");
+	    boolean isHeadless = Boolean.parseBoolean(prop.getProperty("headless"));
+	    
+	    if (seleniumGrid) {
+	        try {
+	            if (browser.equalsIgnoreCase("chrome")) {
+	                ChromeOptions options = new ChromeOptions();
+	                if (isHeadless) {
+	                    options.addArguments("--headless=new", "--disable-gpu");
+	                }
+	                options.addArguments("--window-size=1920,1080");
+	                driver.set(new RemoteWebDriver(new URL(gridURL), options));
+	                
+	            } else if (browser.equalsIgnoreCase("firefox")) {
+	                FirefoxOptions options = new FirefoxOptions();
+	                if (isHeadless) {
+	                    options.addArguments("-headless");
+	                }
+	                driver.set(new RemoteWebDriver(new URL(gridURL), options));
+	                
+	            } else if (browser.equalsIgnoreCase("edge")) {
+	                EdgeOptions options = new EdgeOptions();
+	                if (isHeadless) {
+	                    options.addArguments("--headless=new", "--disable-gpu");
+	                }
+	                options.addArguments("--no-sandbox", "--disable-dev-shm-usage");
+	                driver.set(new RemoteWebDriver(new URL(gridURL), options));
+	                
+	            } else {
+	                throw new IllegalArgumentException("Browser Not Supported: " + browser);
+	            }
+	            logger.info("RemoteWebDriver instance created for Grid (Headless: " + isHeadless + ")");
+	        } catch (MalformedURLException e) {
+	            throw new RuntimeException("Invalid Grid URL", e);
+	        }
+	    } else {
+	        // Local execution logic...
+	        if (browser.equalsIgnoreCase("chrome")) {
+	            ChromeOptions options = new ChromeOptions();
+	            if (isHeadless) {
+	                options.addArguments("--headless=new", "--disable-gpu");
+	            }
+	            options.addArguments("--disable-notifications", "--no-sandbox", "--disable-dev-shm-usage");
+	            driver.set(new ChromeDriver(options));
+	            ExtentManager.registerDriver(getDriver());
+	            logger.info("ChromeDriver Instance is created.");
+	            
+	        } else if (browser.equalsIgnoreCase("firefox")) {
+	            FirefoxOptions options = new FirefoxOptions();
+	            if (isHeadless) {
+	                options.addArguments("-headless");
+	            }
+	            options.addArguments("--width=1920", "--height=1080", "--disable-notifications", "--no-sandbox", "--disable-dev-shm-usage");
+	            driver.set(new FirefoxDriver(options));
+	            ExtentManager.registerDriver(getDriver());
+	            logger.info("FirefoxDriver Instance is created.");
+	            
+	        } else if (browser.equalsIgnoreCase("edge")) {
+	            EdgeOptions options = new EdgeOptions();
+	            if (isHeadless) {
+	                options.addArguments("--headless=new", "--disable-gpu");
+	            }
+	            options.addArguments("--window-size=1920,1080", "--disable-notifications", "--no-sandbox", "--disable-dev-shm-usage");
+	            driver.set(new EdgeDriver(options));
+	            ExtentManager.registerDriver(getDriver());
+	            logger.info("EdgeDriver Instance is created.");
+	        } else {
+	            throw new IllegalArgumentException("Browser Not Supported:" + browser);
+	        }
+	    }
+	    if (getDriver() instanceof RemoteWebDriver) {
+			RemoteWebDriver remoteDriver = (RemoteWebDriver) getDriver();
+			logger.info("--> Executing via SELENIUM GRID");
+			logger.info("--> Remote Session ID: " + remoteDriver.getSessionId());
 		} else {
-			throw new IllegalArgumentException("Browser not supported:" + browser);
+			logger.info("--> Executing via LOCAL Web Driver");
 		}
 	}
 
