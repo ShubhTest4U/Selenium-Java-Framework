@@ -104,7 +104,11 @@ public class BaseClass {
 	            } else {
 	                throw new IllegalArgumentException("Browser Not Supported: " + browser);
 	            }
+	            
+	            // FIX: Register driver for Extent Reports during Grid execution
+	            ExtentManager.registerDriver(getDriver());
 	            logger.info("RemoteWebDriver instance created for Grid (Headless: " + isHeadless + ")");
+	            
 	        } catch (MalformedURLException e) {
 	            throw new RuntimeException("Invalid Grid URL", e);
 	        }
@@ -143,7 +147,9 @@ public class BaseClass {
 	            throw new IllegalArgumentException("Browser Not Supported:" + browser);
 	        }
 	    }
-	    if (getDriver() instanceof RemoteWebDriver) {
+	    
+	    // FIX: Accurately determine if execution is Grid vs Local
+	    if (getDriver().getClass().equals(RemoteWebDriver.class)) {
 			RemoteWebDriver remoteDriver = (RemoteWebDriver) getDriver();
 			logger.info("--> Executing via SELENIUM GRID");
 			logger.info("--> Remote Session ID: " + remoteDriver.getSessionId());
@@ -153,15 +159,22 @@ public class BaseClass {
 	}
 
 	private void configureBrowser() {
-		int implicitWait = Integer.parseInt(prop.getProperty("implicitWait"));
+		// FIX: Check System properties first, fallback to config.properties, and trim spaces
+		String waitStr = System.getProperty("implicitWait", prop.getProperty("implicitWait"));
+		int implicitWait = Integer.parseInt(waitStr.trim());
+		
+		boolean seleniumGrid = Boolean.parseBoolean(System.getProperty("seleniumGrid", prop.getProperty("seleniumGrid")));
+		
 		getDriver().manage().timeouts().implicitlyWait(Duration.ofSeconds(implicitWait));
 		getDriver().manage().window().maximize();
-		try {
-			getDriver().get(prop.getProperty("url"));
-		} catch (Exception e) {
-			System.out.println("Failed to navigate URL:" + e.getMessage());
+		
+		if (seleniumGrid) {
+			getDriver().get(prop.getProperty("url_grid"));
+		} else {
+			getDriver().get(prop.getProperty("url_base"));
 		}
 	}
+
 
 	@AfterMethod
 	public synchronized void teardown() {
