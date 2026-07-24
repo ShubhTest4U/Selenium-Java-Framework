@@ -23,8 +23,6 @@ pipeline {
             }
         }
     
-
-    stages {
         stage('Checkout') {
             steps {
                 git branch: 'main', url: 'https://github.com/ShubhTest4U/Selenium-Java-Framework.git'
